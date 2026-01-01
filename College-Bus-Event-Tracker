@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unnamalai Tech App</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f0f2f5; }
+
+        #login-screen { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; padding: 20px; }
+        .input-field { width: 100%; max-width: 300px; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; background-color: #f9f9f9; box-sizing: border-box; }
+        .btn-main { background-color: #1b5e20; color: white; padding: 12px 50px; border: none; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%; max-width: 300px; }
+        
+        #dashboard { display: none; padding-bottom: 60px; }
+        .app-header { background-color: #1b5e20; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; }
+        .title { font-size: 18px; font-weight: bold; letter-spacing: 1px; }
+        .subtitle { font-size: 10px; opacity: 0.9; }
+
+        .nav-tabs { display: flex; justify-content: space-around; background: #2e7d32; padding: 10px 0; position: sticky; top: 60px; z-index: 99; }
+        .tab-btn { color: #a5d6a7; font-weight: bold; cursor: pointer; padding: 5px 10px; }
+        .tab-btn.active { color: white; border-bottom: 3px solid white; }
+
+        .section { display: none; padding: 15px; }
+        .section.active { display: block; }
+
+        .event-card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; border-left: 5px solid #1b5e20; }
+        .event-title { font-size: 18px; font-weight: bold; color: #333; }
+        #event-details { display: none; background: white; margin-top: 10px; padding: 15px; border-radius: 10px; border: 1px solid #ddd; animation: fadeIn 0.5s; }
+        .rule-head { font-weight: bold; color: #1b5e20; margin-top: 10px; display: block; }
+        .staff-list { margin: 5px 0; padding-left: 20px; }
+
+        .clock-box { background: #333; color: #0f0; padding: 15px; text-align: center; border-radius: 10px; margin-bottom: 15px; font-family: monospace; border: 2px solid #1b5e20; }
+        .search-div { position: relative; margin-bottom: 20px; }
+        .search-box { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #ddd; outline: none; box-sizing: border-box; background: #fff; }       
+        .result-list { position: absolute; background: white; width: 100%; border: 1px solid #ccc; display: none; z-index: 20; max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .result-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 14px; color: black; }
+        .result-item:hover { background-color: #f1f1f1; }
+
+        .recent-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; font-size: 14px; color: #555; }
+        .clear-btn { color: #1b5e20; cursor: pointer; font-size: 12px; }
+        .circle-container { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }
+        .bus-circle-item { text-align: center; font-size: 12px; cursor: pointer; min-width: 50px; }
+        .circle { width: 50px; height: 50px; border: 2px solid #1b5e20; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 5px auto; font-size: 18px; font-weight: bold; background: white; color: #1b5e20; }    
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #f8f9fa; z-index: 200; overflow-y: auto; }
+        .modal-header-bar { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: white; position: sticky; top: 0; z-index: 5; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .back-icon { font-size: 24px; cursor: pointer; font-weight: bold; }
+        .modal-body { padding: 20px; padding-bottom: 60px; }
+
+        .info-card { background: white; border-radius: 15px; padding: 20px; text-align: left; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border-left: 5px solid #1b5e20; }
+        .label { font-size: 12px; color: #888; margin-bottom: 2px; }
+        .value { font-size: 16px; font-weight: 500; color: #333; margin-bottom: 15px; }
+        .phone-val { color: green; font-weight: 600; }
+
+        .timeline-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .timeline-container { position: relative; padding-left: 10px; margin-top: 15px; }
+        .timeline-container::before { content: ''; position: absolute; left: 19px; top: 5px; bottom: 20px; width: 2px; background: #e0e0e0; }
+        .t-item { position: relative; margin-bottom: 25px; padding-left: 45px; }
+        .t-dot { width: 12px; height: 12px; background: white; border: 4px solid #1b5e20; border-radius: 50%; position: absolute; left: 10px; top: 2px; z-index: 2; }
+        .t-name { font-size: 14px; color: #444; display: block; line-height: 1.2; }
+        .t-time { font-size: 13px; font-weight: bold; color: #1b5e20; margin-top: 3px; display: block; }
+
+        .danger-btn-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; }
+        .danger-btn { width: 200px; height: 200px; border-radius: 50%; background-color: red; color: white; font-size: 24px; font-weight: bold; border: 5px solid darkred; box-shadow: 0 0 20px red; cursor: pointer; animation: pulse 1.5s infinite; }
+        #console-screen { display: none; background-color: black; color: #00ff00; padding: 15px; border-radius: 10px; font-family: monospace; height: 350px; overflow-y: auto; margin-top: 20px; }
+        .progress-container { width: 100%; background: #333; height: 10px; border-radius: 5px; margin: 10px 0; }
+        .progress-bar { width: 0%; height: 100%; background: #00ff00; border-radius: 5px; transition: width 0.5s; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div style="text-align:center; margin-bottom:20px;">
+            <h1 style="color:#1b5e20; margin:0; font-size: 24px;">UNNAMALAI</h1>
+            <small style="color:gray; font-weight:bold;">INSTITUTE OF TECHNOLOGY</small>
+        </div>
+
+        <input type="text" id="logName" class="input-field" placeholder="Student Name">
+        <input type="text" id="logID" class="input-field" placeholder="Student ID">
+        
+        <select id="logGender" class="input-field">
+            <option value="" disabled selected>Select Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+        </select>
+
+        <input type="text" onfocus="(this.type='date')" id="logDOB" class="input-field" placeholder="Date of Birth">
+        <input type="number" id="logMobile" class="input-field" placeholder="Mobile Number (10 digits)">
+        
+        <button class="btn-main" onclick="validateAndLogin()">Login & Save</button>
+    </div>
+
+    <div id="dashboard">
+        
+        <div class="app-header">
+            <div class="title">UNNAMALAI</div>
+            <div class="subtitle">INSTITUTE OF TECHNOLOGY</div>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="tab-btn active" onclick="openTab('event', this)">Event</div>
+            <div class="tab-btn" onclick="openTab('bus', this)">Bus</div>
+            <div class="tab-btn" onclick="openTab('emergency', this)">Emergency</div>
+        </div>
+
+        <div id="event" class="section active">
+            <div class="event-card" onclick="toggleEventDetails()">
+                <div class="event-title">📂 Name: mini project</div>
+                <small style="color:gray;">Click to view details ▼</small>
+            </div>
+
+            <div id="event-details">
+                <h3 style="text-align:center; color:#1b5e20; margin-top:0;">🏅 Technical mini project 🏅</h3>
+                <span class="rule-head">Rules and regulations:</span>
+                <p style="font-size:14px; color:#555;">Students can build technical mini projects in areas like IoT & Robotics, Web & Mobile Development, AI & Data Science.</p>
+                <span class="rule-head">Participants:</span> <span>2 to 4 students</span>
+                <p><b>Event date:</b> 07.01.2026 FN</p>
+                <p><b>Venue:</b> Seminar Hall</p>
+                <span class="rule-head">Staff Incharge:</span>
+                <ul class="staff-list">
+                    <li>Dr. S. Parvathi</li><li>Mrs. Chitra</li><li>Mrs. Kavithamani</li><li>Ms. J. Varsha</li>
+                </ul>
+                <br><button onclick="toggleEventDetails()" style="width:100%; padding:10px;">Close</button>
+            </div>
+        </div>
+
+        <div id="bus" class="section">
+            
+            <div class="clock-box">
+                <div class="live-time" id="clockTime">00:00:00</div>
+                <div class="live-date" id="clockDate">Loading...</div>
+            </div>
+
+            <div class="search-div">
+                <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search (e.g., Sattur, Kovilpatti, 20)" onkeyup="findBus()">
+                <div class="result-list" id="resultBox"></div>
+            </div>
+
+            <div class="recent-header">
+                <span>Recent Viewed Buses</span>
+                <span class="clear-btn" onclick="clearRecent()">Clear all</span>
+            </div>
+            <div class="circle-container" id="recentList">
+                <small style="color:grey; padding-left:10px;">No recent buses</small>
+            </div>
+
+            <div style="margin-top:20px; font-size:12px; color:gray; text-align:center;">
+                Start typing your location above to find bus details.
+            </div>
+        </div>
+
+        <div id="emergency" class="section">
+            <div id="dangerZone" class="danger-btn-container">
+                <button class="danger-btn" onclick="checkDanger()">ARE YOU IN<br>DANGER?</button>
+                <p style="color:gray; margin-top:20px;">Click only in emergency</p>
+            </div>
+
+            <div id="console-screen">
+                <div style="color:white; border-bottom:1px solid #333; padding-bottom:5px;">TERMINAL - SECURE CONNECTION</div>
+                <br>
+                <div class="progress-container"><div id="pBar" class="progress-bar"></div></div>
+                <div id="logArea"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal" id="myModal">
+        <div class="modal-header-bar">
+            <span class="back-icon" onclick="closeModal()">&#8592;</span>
+            <span style="font-weight:bold;">Bus Details</span>
+            <span>⋮</span>
+        </div>
+
+        <div class="modal-body">
+            <h1 style="text-align:center; font-size:60px; margin:10px 0;" id="dNo">--</h1>
+            <p style="text-align:center; color:gray; margin-bottom:20px;" id="dRoute">--</p>
+
+            <div class="info-card">
+                <div class="label">Bus Driver name:</div>
+                <div class="value" id="dDriver">--</div>
+                <div class="label">Driver Phone no:</div>
+                <div class="value phone-val" id="dPhone">--</div>
+                <div class="label">Estimated Time:</div>
+                <div class="value" id="dTotalTime" style="margin-bottom:0;">-- mins</div>
+            </div>
+
+            <div class="timeline-section">
+                <span style="font-weight:bold; color:#333;">Bus Route & Timing:</span>
+                <div class="timeline-container" id="timelineList">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let userData = { name: "", id: "", gender: "", dob: "", mobile: "", city: "Unknown", age: 0 };
+        let recentArray = [];
+
+        var buses = [
+            {
+                no: 11, route: "Ettayapuram", searchWords: "ettayapuram", driver: "Rajendran", phone: "9047983804", mins: 45,
+                stops: [{name:"Ettayapuram Stand", time:"8:30 AM"}, {name:"Old Bus Stand", time:"8:50 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 12, route: "Kalugumalai", searchWords: "kalugumalai", driver: "Ramamoorthy", phone: "8148585358", mins: 50,
+                stops: [{name:"Kalugumalai", time:"8:25 AM"}, {name:"Kovilpatti", time:"8:55 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 13, route: "Vembakottai", searchWords: "vembakottai", driver: "Devarajan", phone: "8110809047", mins: 65,
+                stops: [{name:"Vembakottai", time:"8:10 AM"}, {name:"Elayirampannai", time:"8:30 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 16, route: "RTO Office", searchWords: "rto office kovilpatti", driver: "Selvaraj", phone: "9442866340", mins: 20,
+                stops: [{name:"RTO Office", time:"8:55 AM"}, {name:"Old Bus Stand", time:"9:05 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 18, route: "Thoothukudi", searchWords: "thoothukudi tuticorin", driver: "Thangamuniyasamy", phone: "6383280048", mins: 90,
+                stops: [{name:"Thoothukudi New Stand", time:"7:45 AM"}, {name:"Pudukottai", time:"8:15 AM"}, {name:"Kovilpatti", time:"8:50 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 19, route: "Pasuvanthanai", searchWords: "nadar hss pasuvanthanai", driver: "A.Mariavincent", phone: "9865035155", mins: 35,
+                stops: [{name:"Nadar HSS (Start)", time:"8:30 AM"}, {name:"Pasuvanthanai Road", time:"8:40 AM"}, {name:"Kovilpatti Junction", time:"8:55 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 20, route: "Sattur", searchWords: "sattur", driver: "Pandiyaraj", phone: "9500515347", mins: 55,
+                stops: [
+                    { name: "Sattur Mudhva Bus Stop", time: "8:20 AM" },
+                    { name: "Sadayampatti", time: "8:30 AM" },
+                    { name: "Menachi Bhavan", time: "8:35 AM" },
+                    { name: "Sattur Market", time: "8:40 AM" },
+                    { name: "Kovilpatti Railway Stop", time: "8:55 AM" },
+                    { name: "Kovilpatti Bus Stop", time: "09:00 AM" },
+                    { name: "UIT Entrance", time: "09:05 AM" },
+                    { name: "UIT College", time: "09:15 AM" }
+                ]
+            },
+            {
+                no: 21, route: "Sankarankovil", searchWords: "sankarankovil", driver: "Rajkumar", phone: "9344851710", mins: 60,
+                stops: [{name:"Sankarankovil", time:"8:15 AM"}, {name:"Thiruvengadam", time:"8:40 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 22, route: "Old Bus Stand", searchWords: "old bus stand", driver: "Vijayakumar", phone: "7395867178", mins: 15,
+                stops: [{name:"Old Bus Stand", time:"9:00 AM"}, {name:"New Road", time:"9:10 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            }
+        ];
+
+        function startClock() {
+            setInterval(() => {
+                let now = new Date();
+                document.getElementById("clockTime").innerText = now.toLocaleTimeString();
+                let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById("clockDate").innerText = now.toLocaleDateString('en-US', options);
+            }, 1000);
+        }
+        startClock();
+
+        function validateAndLogin() {
+            let name = document.getElementById("logName").value;
+            let id = document.getElementById("logID").value;
+            let gender = document.getElementById("logGender").value;
+            let dob = document.getElementById("logDOB").value;
+            let mobile = document.getElementById("logMobile").value;
+
+            if(name && id && gender && dob && mobile) {
+                if(mobile.length !== 10) {
+                    alert("⚠️ Mobile Number must be 10 digits!");
+                    return;
+                }
+                
+                userData.name = name;
+                userData.id = id;
+                userData.gender = gender;
+                userData.dob = dob;
+                userData.mobile = mobile;
+
+                let ageDif = Date.now() - new Date(dob).getTime();
+                let ageDate = new Date(ageDif);
+                userData.age = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+                document.getElementById("login-screen").style.display = "none";
+                document.getElementById("dashboard").style.display = "block";
+            } else {
+                alert("Please fill ALL details to Login!");
+            }
+        }
+
+        function openTab(tabName, btn) {
+            document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function toggleEventDetails() {
+            let details = document.getElementById("event-details");
+            details.style.display = (details.style.display === "block") ? "none" : "block";
+        }
+
+        function findBus() {
+            var input = document.getElementById("searchInput").value.toLowerCase();
+            var box = document.getElementById("resultBox");
+            box.innerHTML = "";
+            
+            if (input === "") { box.style.display = "none"; return; }
+
+            let found = false;
+            for (var i = 0; i < buses.length; i++) {
+                var bus = buses[i];
+                if (bus.searchWords.includes(input) || bus.no.toString().includes(input) || bus.route.toLowerCase().includes(input)) {
+                    found = true;
+                    box.style.display = "block";
+                    var div = document.createElement("div");
+                    div.className = "result-item";
+                    div.innerText = "🚌 " + bus.no + " - " + bus.route;
+                    div.onclick = (function(selectedBus) {
+                        return function() {
+                            openBusDetails(selectedBus, true);
+                            document.getElementById("searchInput").value = "";
+                            box.style.display = "none";
+                        }
+                    })(bus);
+                    box.appendChild(div);
+                }
+            }
+            if(!found) box.style.display = "none";
+        }
+
+        function openBusDetails(bus, saveToRecent) {
+            document.getElementById("dNo").innerText = bus.no;
+            document.getElementById("dRoute").innerText = bus.route;
+            document.getElementById("dDriver").innerText = bus.driver;
+            document.getElementById("dPhone").innerText = bus.phone;
+            document.getElementById("dTotalTime").innerText = bus.mins + " mins";
+
+            var timelineHTML = "";
+            if (bus.stops && bus.stops.length > 0) {
+                for (var i = 0; i < bus.stops.length; i++) {
+                    timelineHTML += `
+                    <div class="t-item">
+                        <div class="t-dot"></div>
+                        <span class="t-name">${bus.stops[i].name}</span>
+                        <span class="t-time">${bus.stops[i].time}</span>
+                    </div>`;
+                }
+            } else {
+                timelineHTML = "<div style='padding:10px; color:gray;'>Stops details not available</div>";
+            }
+            document.getElementById("timelineList").innerHTML = timelineHTML;
+
+            document.getElementById("myModal").style.display = "block";
+
+            if (saveToRecent) addToRecent(bus);
+        }
+
+        function closeModal() {
+            document.getElementById("myModal").style.display = "none";
+        }
+
+        function addToRecent(bus) {
+            for(var i=0; i<recentArray.length; i++) {
+                if(recentArray[i].no === bus.no) recentArray.splice(i, 1);
+            }
+            recentArray.unshift(bus);
+            
+            var container = document.getElementById("recentList");
+            container.innerHTML = "";
+            for(var i=0; i<recentArray.length; i++) {
+                var b = recentArray[i];
+                var div = document.createElement("div");
+                div.className = "bus-circle-item";
+                var shortName = b.route.split(' ')[0]; 
+                div.innerHTML = `<div class="circle">${b.no}</div><div>${shortName}</div>`;
+                div.onclick = (function(x) {
+                    return function() { openBusDetails(x, false); }
+                })(b);
+                container.appendChild(div);
+            }
+        }
+
+        function clearRecent() {
+            recentArray = [];
+            document.getElementById("recentList").innerHTML = "<small style='color:grey; padding-left:10px;'>No recent buses</small>";
+        }
+
+        function checkDanger() {
+            if(confirm("⚠ WARNING: Are you sure you are in DANGER?")) {
+                if(confirm("🛑 FINAL CHECK: Giving false info is a crime.\nAre you TRULY in danger?")) {
+                    
+                    alert("Fetching GPS Location...");
+                    setTimeout(() => {
+                        let city = prompt("⚠️ GPS Signal Weak! Please type Current City manually:");
+                        if(city) {
+                            userData.city = city;
+                            startConsoleSimulation(); 
+                        } else {
+                            alert("City Required for Rescue!");
+                        }
+                    }, 500);
+                }
+            }
+        }
+
+        function startConsoleSimulation() {
+            document.getElementById("dangerZone").style.display = "none";
+            document.getElementById("console-screen").style.display = "block";
+
+            let percent = 0;
+            let logs = document.getElementById("logArea");
+            let bar = document.getElementById("pBar");
+
+            let timer = setInterval(() => {
+                percent += 10;
+                bar.style.width = percent + "%";
+
+                if(percent == 10) logs.innerHTML += "> Initializing Rescue Protocol...<br>";
+                if(percent == 20) logs.innerHTML += "> Fetching Saved User Data... [DONE]<br>";
+                if(percent == 40) logs.innerHTML += "> Student: " + userData.name + " (" + userData.gender + ")<br>";
+                if(percent == 50) logs.innerHTML += "> Age: " + userData.age + " | Mobile: " + userData.mobile + "<br>";
+                if(percent == 70) logs.innerHTML += "> Location Locked: " + userData.city.toUpperCase() + "<br>";
+                if(percent == 80) logs.innerHTML += "> Accessing Camera & Mic... [ALLOWED]<br>";
+                if(percent == 90) logs.innerHTML += "> Sending Data to Police Control Room...<br>";
+                
+                document.getElementById("console-screen").scrollTop = document.getElementById("console-screen").scrollHeight;
+
+                if(percent >= 100) {
+                    clearInterval(timer);
+                    logs.innerHTML += "<br><b style='color:red; background:white; padding:5px;'> >> ALERT SENT SUCCESSFULLY! << </b>";
+                }
+            }, 800);
+        }
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unnamalai Tech App</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f0f2f5; }
+
+        #login-screen { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; padding: 20px; }
+        .input-field { width: 100%; max-width: 300px; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; background-color: #f9f9f9; box-sizing: border-box; }
+        .btn-main { background-color: #1b5e20; color: white; padding: 12px 50px; border: none; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%; max-width: 300px; }
+        
+        #dashboard { display: none; padding-bottom: 60px; }
+        .app-header { background-color: #1b5e20; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; }
+        .title { font-size: 18px; font-weight: bold; letter-spacing: 1px; }
+        .subtitle { font-size: 10px; opacity: 0.9; }
+
+        .nav-tabs { display: flex; justify-content: space-around; background: #2e7d32; padding: 10px 0; position: sticky; top: 60px; z-index: 99; }
+        .tab-btn { color: #a5d6a7; font-weight: bold; cursor: pointer; padding: 5px 10px; }
+        .tab-btn.active { color: white; border-bottom: 3px solid white; }
+
+        .section { display: none; padding: 15px; }
+        .section.active { display: block; }
+
+        .event-card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; border-left: 5px solid #1b5e20; }
+        .event-title { font-size: 18px; font-weight: bold; color: #333; }
+        #event-details { display: none; background: white; margin-top: 10px; padding: 15px; border-radius: 10px; border: 1px solid #ddd; animation: fadeIn 0.5s; }
+        .rule-head { font-weight: bold; color: #1b5e20; margin-top: 10px; display: block; }
+        .staff-list { margin: 5px 0; padding-left: 20px; }
+
+        .clock-box { background: #333; color: #0f0; padding: 15px; text-align: center; border-radius: 10px; margin-bottom: 15px; font-family: monospace; border: 2px solid #1b5e20; }
+        .search-div { position: relative; margin-bottom: 20px; }
+        .search-box { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #ddd; outline: none; box-sizing: border-box; background: #fff; }       
+        .result-list { position: absolute; background: white; width: 100%; border: 1px solid #ccc; display: none; z-index: 20; max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .result-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 14px; color: black; }
+        .result-item:hover { background-color: #f1f1f1; }
+
+        .recent-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; font-size: 14px; color: #555; }
+        .clear-btn { color: #1b5e20; cursor: pointer; font-size: 12px; }
+        .circle-container { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }
+        .bus-circle-item { text-align: center; font-size: 12px; cursor: pointer; min-width: 50px; }
+        .circle { width: 50px; height: 50px; border: 2px solid #1b5e20; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 5px auto; font-size: 18px; font-weight: bold; background: white; color: #1b5e20; }    
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #f8f9fa; z-index: 200; overflow-y: auto; }
+        .modal-header-bar { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: white; position: sticky; top: 0; z-index: 5; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .back-icon { font-size: 24px; cursor: pointer; font-weight: bold; }
+        .modal-body { padding: 20px; padding-bottom: 60px; }
+
+        .info-card { background: white; border-radius: 15px; padding: 20px; text-align: left; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border-left: 5px solid #1b5e20; }
+        .label { font-size: 12px; color: #888; margin-bottom: 2px; }
+        .value { font-size: 16px; font-weight: 500; color: #333; margin-bottom: 15px; }
+        .phone-val { color: green; font-weight: 600; }
+
+        .timeline-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .timeline-container { position: relative; padding-left: 10px; margin-top: 15px; }
+        .timeline-container::before { content: ''; position: absolute; left: 19px; top: 5px; bottom: 20px; width: 2px; background: #e0e0e0; }
+        .t-item { position: relative; margin-bottom: 25px; padding-left: 45px; }
+        .t-dot { width: 12px; height: 12px; background: white; border: 4px solid #1b5e20; border-radius: 50%; position: absolute; left: 10px; top: 2px; z-index: 2; }
+        .t-name { font-size: 14px; color: #444; display: block; line-height: 1.2; }
+        .t-time { font-size: 13px; font-weight: bold; color: #1b5e20; margin-top: 3px; display: block; }
+
+        .danger-btn-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; }
+        .danger-btn { width: 200px; height: 200px; border-radius: 50%; background-color: red; color: white; font-size: 24px; font-weight: bold; border: 5px solid darkred; box-shadow: 0 0 20px red; cursor: pointer; animation: pulse 1.5s infinite; }
+        #console-screen { display: none; background-color: black; color: #00ff00; padding: 15px; border-radius: 10px; font-family: monospace; height: 350px; overflow-y: auto; margin-top: 20px; }
+        .progress-container { width: 100%; background: #333; height: 10px; border-radius: 5px; margin: 10px 0; }
+        .progress-bar { width: 0%; height: 100%; background: #00ff00; border-radius: 5px; transition: width 0.5s; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div style="text-align:center; margin-bottom:20px;">
+            <h1 style="color:#1b5e20; margin:0; font-size: 24px;">UNNAMALAI</h1>
+            <small style="color:gray; font-weight:bold;">INSTITUTE OF TECHNOLOGY</small>
+        </div>
+
+        <input type="text" id="logName" class="input-field" placeholder="Student Name">
+        <input type="text" id="logID" class="input-field" placeholder="Student ID">
+        
+        <select id="logGender" class="input-field">
+            <option value="" disabled selected>Select Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+        </select>
+
+        <input type="text" onfocus="(this.type='date')" id="logDOB" class="input-field" placeholder="Date of Birth">
+        <input type="number" id="logMobile" class="input-field" placeholder="Mobile Number (10 digits)">
+        
+        <button class="btn-main" onclick="validateAndLogin()">Login & Save</button>
+    </div>
+
+    <div id="dashboard">
+        
+        <div class="app-header">
+            <div class="title">UNNAMALAI</div>
+            <div class="subtitle">INSTITUTE OF TECHNOLOGY</div>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="tab-btn active" onclick="openTab('event', this)">Event</div>
+            <div class="tab-btn" onclick="openTab('bus', this)">Bus</div>
+            <div class="tab-btn" onclick="openTab('emergency', this)">Emergency</div>
+        </div>
+
+        <div id="event" class="section active">
+            <div class="event-card" onclick="toggleEventDetails()">
+                <div class="event-title">📂 Name: mini project</div>
+                <small style="color:gray;">Click to view details ▼</small>
+            </div>
+
+            <div id="event-details">
+                <h3 style="text-align:center; color:#1b5e20; margin-top:0;">🏅 Technical mini project 🏅</h3>
+                <span class="rule-head">Rules and regulations:</span>
+                <p style="font-size:14px; color:#555;">Students can build technical mini projects in areas like IoT & Robotics, Web & Mobile Development, AI & Data Science.</p>
+                <span class="rule-head">Participants:</span> <span>2 to 4 students</span>
+                <p><b>Event date:</b> 07.01.2026 FN</p>
+                <p><b>Venue:</b> Seminar Hall</p>
+                <span class="rule-head">Staff Incharge:</span>
+                <ul class="staff-list">
+                    <li>Dr. S. Parvathi</li><li>Mrs. Chitra</li><li>Mrs. Kavithamani</li><li>Ms. J. Varsha</li>
+                </ul>
+                <br><button onclick="toggleEventDetails()" style="width:100%; padding:10px;">Close</button>
+            </div>
+        </div>
+
+        <div id="bus" class="section">
+            
+            <div class="clock-box">
+                <div class="live-time" id="clockTime">00:00:00</div>
+                <div class="live-date" id="clockDate">Loading...</div>
+            </div>
+
+            <div class="search-div">
+                <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search (e.g., Sattur, Kovilpatti, 20)" onkeyup="findBus()">
+                <div class="result-list" id="resultBox"></div>
+            </div>
+
+            <div class="recent-header">
+                <span>Recent Viewed Buses</span>
+                <span class="clear-btn" onclick="clearRecent()">Clear all</span>
+            </div>
+            <div class="circle-container" id="recentList">
+                <small style="color:grey; padding-left:10px;">No recent buses</small>
+            </div>
+
+            <div style="margin-top:20px; font-size:12px; color:gray; text-align:center;">
+                Start typing your location above to find bus details.
+            </div>
+        </div>
+
+        <div id="emergency" class="section">
+            <div id="dangerZone" class="danger-btn-container">
+                <button class="danger-btn" onclick="checkDanger()">ARE YOU IN<br>DANGER?</button>
+                <p style="color:gray; margin-top:20px;">Click only in emergency</p>
+            </div>
+
+            <div id="console-screen">
+                <div style="color:white; border-bottom:1px solid #333; padding-bottom:5px;">TERMINAL - SECURE CONNECTION</div>
+                <br>
+                <div class="progress-container"><div id="pBar" class="progress-bar"></div></div>
+                <div id="logArea"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal" id="myModal">
+        <div class="modal-header-bar">
+            <span class="back-icon" onclick="closeModal()">&#8592;</span>
+            <span style="font-weight:bold;">Bus Details</span>
+            <span>⋮</span>
+        </div>
+
+        <div class="modal-body">
+            <h1 style="text-align:center; font-size:60px; margin:10px 0;" id="dNo">--</h1>
+            <p style="text-align:center; color:gray; margin-bottom:20px;" id="dRoute">--</p>
+
+            <div class="info-card">
+                <div class="label">Bus Driver name:</div>
+                <div class="value" id="dDriver">--</div>
+                <div class="label">Driver Phone no:</div>
+                <div class="value phone-val" id="dPhone">--</div>
+                <div class="label">Estimated Time:</div>
+                <div class="value" id="dTotalTime" style="margin-bottom:0;">-- mins</div>
+            </div>
+
+            <div class="timeline-section">
+                <span style="font-weight:bold; color:#333;">Bus Route & Timing:</span>
+                <div class="timeline-container" id="timelineList">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let userData = { name: "", id: "", gender: "", dob: "", mobile: "", city: "Unknown", age: 0 };
+        let recentArray = [];
+
+        var buses = [
+            {
+                no: 11, route: "Ettayapuram", searchWords: "ettayapuram", driver: "Rajendran", phone: "9047983804", mins: 45,
+                stops: [{name:"Ettayapuram Stand", time:"8:30 AM"}, {name:"Old Bus Stand", time:"8:50 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 12, route: "Kalugumalai", searchWords: "kalugumalai", driver: "Ramamoorthy", phone: "8148585358", mins: 50,
+                stops: [{name:"Kalugumalai", time:"8:25 AM"}, {name:"Kovilpatti", time:"8:55 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 13, route: "Vembakottai", searchWords: "vembakottai", driver: "Devarajan", phone: "8110809047", mins: 65,
+                stops: [{name:"Vembakottai", time:"8:10 AM"}, {name:"Elayirampannai", time:"8:30 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 16, route: "RTO Office", searchWords: "rto office kovilpatti", driver: "Selvaraj", phone: "9442866340", mins: 20,
+                stops: [{name:"RTO Office", time:"8:55 AM"}, {name:"Old Bus Stand", time:"9:05 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 18, route: "Thoothukudi", searchWords: "thoothukudi tuticorin", driver: "Thangamuniyasamy", phone: "6383280048", mins: 90,
+                stops: [{name:"Thoothukudi New Stand", time:"7:45 AM"}, {name:"Pudukottai", time:"8:15 AM"}, {name:"Kovilpatti", time:"8:50 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 19, route: "Pasuvanthanai", searchWords: "nadar hss pasuvanthanai", driver: "A.Mariavincent", phone: "9865035155", mins: 35,
+                stops: [{name:"Nadar HSS (Start)", time:"8:30 AM"}, {name:"Pasuvanthanai Road", time:"8:40 AM"}, {name:"Kovilpatti Junction", time:"8:55 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 20, route: "Sattur", searchWords: "sattur", driver: "Pandiyaraj", phone: "9500515347", mins: 55,
+                stops: [
+                    { name: "Sattur Mudhva Bus Stop", time: "8:20 AM" },
+                    { name: "Sadayampatti", time: "8:30 AM" },
+                    { name: "Menachi Bhavan", time: "8:35 AM" },
+                    { name: "Sattur Market", time: "8:40 AM" },
+                    { name: "Kovilpatti Railway Stop", time: "8:55 AM" },
+                    { name: "Kovilpatti Bus Stop", time: "09:00 AM" },
+                    { name: "UIT Entrance", time: "09:05 AM" },
+                    { name: "UIT College", time: "09:15 AM" }
+                ]
+            },
+            {
+                no: 21, route: "Sankarankovil", searchWords: "sankarankovil", driver: "Rajkumar", phone: "9344851710", mins: 60,
+                stops: [{name:"Sankarankovil", time:"8:15 AM"}, {name:"Thiruvengadam", time:"8:40 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            },
+            {
+                no: 22, route: "Old Bus Stand", searchWords: "old bus stand", driver: "Vijayakumar", phone: "7395867178", mins: 15,
+                stops: [{name:"Old Bus Stand", time:"9:00 AM"}, {name:"New Road", time:"9:10 AM"}, {name:"UIT College", time:"9:15 AM"}]
+            }
+        ];
+
+        function startClock() {
+            setInterval(() => {
+                let now = new Date();
+                document.getElementById("clockTime").innerText = now.toLocaleTimeString();
+                let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById("clockDate").innerText = now.toLocaleDateString('en-US', options);
+            }, 1000);
+        }
+        startClock();
+
+        function validateAndLogin() {
+            let name = document.getElementById("logName").value;
+            let id = document.getElementById("logID").value;
+            let gender = document.getElementById("logGender").value;
+            let dob = document.getElementById("logDOB").value;
+            let mobile = document.getElementById("logMobile").value;
+
+            if(name && id && gender && dob && mobile) {
+                if(mobile.length !== 10) {
+                    alert("⚠️ Mobile Number must be 10 digits!");
+                    return;
+                }
+                
+                userData.name = name;
+                userData.id = id;
+                userData.gender = gender;
+                userData.dob = dob;
+                userData.mobile = mobile;
+
+                let ageDif = Date.now() - new Date(dob).getTime();
+                let ageDate = new Date(ageDif);
+                userData.age = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+                document.getElementById("login-screen").style.display = "none";
+                document.getElementById("dashboard").style.display = "block";
+            } else {
+                alert("Please fill ALL details to Login!");
+            }
+        }
+
+        function openTab(tabName, btn) {
+            document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function toggleEventDetails() {
+            let details = document.getElementById("event-details");
+            details.style.display = (details.style.display === "block") ? "none" : "block";
+        }
+
+        function findBus() {
+            var input = document.getElementById("searchInput").value.toLowerCase();
+            var box = document.getElementById("resultBox");
+            box.innerHTML = "";
+            
+            if (input === "") { box.style.display = "none"; return; }
+
+            let found = false;
+            for (var i = 0; i < buses.length; i++) {
+                var bus = buses[i];
+                if (bus.searchWords.includes(input) || bus.no.toString().includes(input) || bus.route.toLowerCase().includes(input)) {
+                    found = true;
+                    box.style.display = "block";
+                    var div = document.createElement("div");
+                    div.className = "result-item";
+                    div.innerText = "🚌 " + bus.no + " - " + bus.route;
+                    div.onclick = (function(selectedBus) {
+                        return function() {
+                            openBusDetails(selectedBus, true);
+                            document.getElementById("searchInput").value = "";
+                            box.style.display = "none";
+                        }
+                    })(bus);
+                    box.appendChild(div);
+                }
+            }
+            if(!found) box.style.display = "none";
+        }
+
+        function openBusDetails(bus, saveToRecent) {
+            document.getElementById("dNo").innerText = bus.no;
+            document.getElementById("dRoute").innerText = bus.route;
+            document.getElementById("dDriver").innerText = bus.driver;
+            document.getElementById("dPhone").innerText = bus.phone;
+            document.getElementById("dTotalTime").innerText = bus.mins + " mins";
+
+            var timelineHTML = "";
+            if (bus.stops && bus.stops.length > 0) {
+                for (var i = 0; i < bus.stops.length; i++) {
+                    timelineHTML += `
+                    <div class="t-item">
+                        <div class="t-dot"></div>
+                        <span class="t-name">${bus.stops[i].name}</span>
+                        <span class="t-time">${bus.stops[i].time}</span>
+                    </div>`;
+                }
+            } else {
+                timelineHTML = "<div style='padding:10px; color:gray;'>Stops details not available</div>";
+            }
+            document.getElementById("timelineList").innerHTML = timelineHTML;
+
+            document.getElementById("myModal").style.display = "block";
+
+            if (saveToRecent) addToRecent(bus);
+        }
+
+        function closeModal() {
+            document.getElementById("myModal").style.display = "none";
+        }
+
+        function addToRecent(bus) {
+            for(var i=0; i<recentArray.length; i++) {
+                if(recentArray[i].no === bus.no) recentArray.splice(i, 1);
+            }
+            recentArray.unshift(bus);
+            
+            var container = document.getElementById("recentList");
+            container.innerHTML = "";
+            for(var i=0; i<recentArray.length; i++) {
+                var b = recentArray[i];
+                var div = document.createElement("div");
+                div.className = "bus-circle-item";
+                var shortName = b.route.split(' ')[0]; 
+                div.innerHTML = `<div class="circle">${b.no}</div><div>${shortName}</div>`;
+                div.onclick = (function(x) {
+                    return function() { openBusDetails(x, false); }
+                })(b);
+                container.appendChild(div);
+            }
+        }
+
+        function clearRecent() {
+            recentArray = [];
+            document.getElementById("recentList").innerHTML = "<small style='color:grey; padding-left:10px;'>No recent buses</small>";
+        }
+
+        function checkDanger() {
+            if(confirm("⚠ WARNING: Are you sure you are in DANGER?")) {
+                if(confirm("🛑 FINAL CHECK: Giving false info is a crime.\nAre you TRULY in danger?")) {
+                    
+                    alert("Fetching GPS Location...");
+                    setTimeout(() => {
+                        let city = prompt("⚠️ GPS Signal Weak! Please type Current City manually:");
+                        if(city) {
+                            userData.city = city;
+                            startConsoleSimulation(); 
+                        } else {
+                            alert("City Required for Rescue!");
+                        }
+                    }, 500);
+                }
+            }
+        }
+
+        function startConsoleSimulation() {
+            document.getElementById("dangerZone").style.display = "none";
+            document.getElementById("console-screen").style.display = "block";
+
+            let percent = 0;
+            let logs = document.getElementById("logArea");
+            let bar = document.getElementById("pBar");
+
+            let timer = setInterval(() => {
+                percent += 10;
+                bar.style.width = percent + "%";
+
+                if(percent == 10) logs.innerHTML += "> Initializing Rescue Protocol...<br>";
+                if(percent == 20) logs.innerHTML += "> Fetching Saved User Data... [DONE]<br>";
+                if(percent == 40) logs.innerHTML += "> Student: " + userData.name + " (" + userData.gender + ")<br>";
+                if(percent == 50) logs.innerHTML += "> Age: " + userData.age + " | Mobile: " + userData.mobile + "<br>";
+                if(percent == 70) logs.innerHTML += "> Location Locked: " + userData.city.toUpperCase() + "<br>";
+                if(percent == 80) logs.innerHTML += "> Accessing Camera & Mic... [ALLOWED]<br>";
+                if(percent == 90) logs.innerHTML += "> Sending Data to Police Control Room...<br>";
+                
+                document.getElementById("console-screen").scrollTop = document.getElementById("console-screen").scrollHeight;
+
+                if(percent >= 100) {
+                    clearInterval(timer);
+                    logs.innerHTML += "<br><b style='color:red; background:white; padding:5px;'> >> ALERT SENT SUCCESSFULLY! << </b>";
+                }
+            }, 800);
+        }
+    </script>
+</body>
+</html>
